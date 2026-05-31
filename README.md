@@ -1,30 +1,54 @@
 # Cadence
 
-Adaptive skill-learning — one move at a time.
+Adaptive skill-learning — one move at a time. Multi-screen, fully client-side, no backend.
 
 ## Running locally
 
-No build step, no server, no dependencies.
+No build step. No server required.
 
+```bash
+git clone https://github.com/gursharan-brar/Cadence-2026.git
+cd Cadence-2026
+open index.html       # macOS
+xdg-open index.html   # Linux
+# or just double-click index.html in your file manager
 ```
-git clone <repo>
-open cadence/index.html   # macOS
-# or: double-click index.html in your file manager
-# or: use any static server: npx serve .
-```
 
-Open `index.html` directly in any modern browser. That's it.
+> **Tip:** Some browsers block `fetch` on `file://` URLs. If API calls fail, serve it locally:
+> ```bash
+> npx serve .        # Node.js
+> python3 -m http.server 8080
+> ```
+> Then open `http://localhost:8080`.
 
-## Your API key
+## Your Anthropic API key
 
-Cadence uses the [Anthropic API](https://docs.anthropic.com) (Claude Haiku) to generate your next move. You supply your own key:
+Cadence calls [Claude Haiku](https://docs.anthropic.com) directly from your browser. You supply your own key:
 
 1. Get a key at **[console.anthropic.com](https://console.anthropic.com)**
-2. On first load, paste it into the key entry screen
-3. The key is held in `sessionStorage` only — it disappears when you close the tab and is never sent anywhere except directly to Anthropic's API
+2. Paste it into the key entry screen on first load
+3. The key lives in `sessionStorage` only — cleared when the tab closes, never sent anywhere except directly to Anthropic
 
-Each check-in makes one API call (~300 tokens). At Haiku pricing this costs well under a cent per session.
+Each check-in costs roughly one Haiku API call (~300 tokens, well under $0.01).
 
 ## What it does
 
-Enter a skill → answer 3 calibration questions → get one focused move per day. Check in after each move (Done / Done easily / Took longer / Got stuck / Skipped). The plan adapts: the finish line shifts, "stuck" produces a smaller bridging step, "fast" pulls the deadline in. No streaks, no badges — just momentum.
+Enter a skill → answer 3 calibration questions → get one focused move per session. Check in after each move:
+
+| Outcome | Effect |
+|---------|--------|
+| Done | Advance, same difficulty |
+| Done easily | Advance, pull finish line in, difficulty up |
+| Took longer | Advance, push finish line out |
+| Got stuck | Advance day, but next step is **smaller and more concrete** |
+| Skipped | Advance day, push finish line out, move is lightly reframed |
+
+No streaks. No badges. Just momentum.
+
+## Screens
+
+- **Key entry** — paste your Anthropic key once per tab session
+- **Home** — see all in-progress skills, resume any with one tap
+- **Calibrate** — name a skill, set your level, hours, and goal
+- **Loop** — your one move, progress bar, check-in row
+- **History** — full log of every check-in with outcome badges

@@ -6,711 +6,963 @@
 <title>Cadence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── Variables ── */
+:root {
+  --bg-deep:    #080b18;
+  --bg-base:    #0d1126;
+  --bg-raised:  #141a35;
+  --bg-high:    #1c2444;
+  --ink:        #eef1fb;
+  --ink-muted:  #8892c8;
+  --ink-faint:  #4a5280;
+  --violet:     #7c5cff;
+  --violet-dim: rgba(124,92,255,0.15);
+  --blue:       #3da9fc;
+  --blue-dim:   rgba(61,169,252,0.12);
+  --success:    #34d399;
+  --warning:    #f59e0b;
+  --danger:     #f87171;
+  --border:     rgba(124,92,255,0.18);
+  --border-soft: rgba(238,241,251,0.06);
+}
 
-  :root {
-    --bg: #0b0e1a;
-    --surface: #141a2e;
-    --text: #eef1fb;
-    --muted: #8b93b8;
-    --accent: #7c5cff;
-    --accent-dim: rgba(124,92,255,0.15);
-    --blue: #3da9fc;
-    --divider: rgba(139,147,184,0.12);
-    --radius: 8px;
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Background system ── */
+#bg-gradients {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at -10% 5%, rgba(124,92,255,0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 110% 95%, rgba(61,169,252,0.13) 0%, transparent 65%),
+    var(--bg-deep);
+}
+
+#bg-noise {
+  position: fixed; inset: 0; z-index: 1;
+  width: 100%; height: 100%;
+  opacity: 0.035;
+  pointer-events: none;
+}
+
+#bg-stars {
+  position: fixed; inset: 0; z-index: 2;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+}
+
+#bg-orb {
+  position: fixed;
+  width: 420px; height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,92,255,0.16) 0%, rgba(124,92,255,0.05) 45%, transparent 70%);
+  z-index: 3;
+  pointer-events: none;
+  top: 5%; left: 15%;
+  animation: orbFloat 26s ease-in-out infinite;
+}
+
+@keyframes orbFloat {
+  0%   { transform: translate(0,0) scale(1); }
+  25%  { transform: translate(70px,-50px) scale(1.04); }
+  50%  { transform: translate(30px,55px) scale(0.97); }
+  75%  { transform: translate(-55px,15px) scale(1.02); }
+  100% { transform: translate(0,0) scale(1); }
+}
+
+/* ── App layer ── */
+#app {
+  position: relative; z-index: 10;
+  min-height: 100%;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+/* ── Screen base ── */
+.screen {
+  width: 100%; max-width: 560px;
+  padding: 48px 24px 80px;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* ── Screen transitions ── */
+@keyframes fadeRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.screen-enter { animation: fadeRise 280ms ease-out both; }
+.screen-exit  { animation: fadeOut 180ms ease-in forwards; pointer-events: none; }
+
+/* ── Wordmark ── */
+.wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px; font-weight: 700; letter-spacing: -0.3px;
+  color: var(--ink);
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px; font-weight: 600;
+  padding: 14px 28px; border-radius: 99px;
+  border: none; background: var(--violet); color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(124,92,255,0.35);
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.9; box-shadow: 0 4px 28px rgba(124,92,255,0.5); }
+.btn-primary:active:not(:disabled) { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.32; cursor: default; box-shadow: none; }
+
+.btn-pill {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px; font-weight: 500;
+  padding: 10px 20px; border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised); color: var(--ink-muted);
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
+}
+.btn-pill:hover:not(:disabled) { border-color: rgba(124,92,255,0.4); color: var(--ink); }
+.btn-pill.selected {
+  background: var(--violet-dim); border-color: var(--violet); color: var(--ink);
+}
+
+.btn-back {
+  background: none; border: none;
+  font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500;
+  color: var(--ink-muted); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0; transition: color 0.15s;
+  margin-bottom: 40px;
+}
+.btn-back:hover { color: var(--ink); }
+
+.btn-ghost {
+  background: none; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  color: var(--ink-faint); cursor: pointer; padding: 0;
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+.btn-ghost:hover { color: var(--ink-muted); }
+
+/* ── Cards ── */
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ── Inputs ── */
+input[type="password"], input[type="text"] {
+  width: 100%;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif; font-size: 16px;
+  padding: 14px 18px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+input:focus {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px var(--violet-dim);
+}
+input::placeholder { color: var(--ink-faint); }
+
+/* ── Progress bar ── */
+.prog-track {
+  width: 100%; height: 6px;
+  background: var(--bg-high);
+  border-radius: 99px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; background: var(--blue);
+  border-radius: 99px;
+  box-shadow: 0 0 12px var(--blue-dim);
+  width: 0%;
+  transition: width 700ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* ── Divider ── */
+.divider { border: none; border-top: 1px solid var(--border-soft); margin: 32px 0; }
+
+/* ── Error banner ── */
+.error-box {
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 10px; padding: 12px 16px;
+  font-size: 14px; color: var(--danger);
+  display: none; align-items: center; gap: 12px;
+}
+.error-box.show { display: flex; }
+
+/* ══════════════════════════════════
+   SCREEN 0 — KEY ENTRY
+══════════════════════════════════ */
+.screen-key {
+  justify-content: center; align-items: center; gap: 0;
+}
+.screen-key .wordmark { font-size: 30px; margin-bottom: 48px; }
+.key-form { width: 100%; max-width: 400px; }
+.field-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 600; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  display: block; margin-bottom: 10px;
+}
+.helper-text {
+  font-size: 13px; color: var(--ink-muted);
+  margin-top: 10px; line-height: 1.55;
+}
+.helper-text a { color: var(--blue); text-decoration: none; }
+.helper-text a:hover { text-decoration: underline; }
+
+/* ══════════════════════════════════
+   SCREEN 1 — HOME
+══════════════════════════════════ */
+.home-header { margin-bottom: 44px; }
+.home-header .wordmark { font-size: 28px; margin-bottom: 6px; }
+.home-tagline { font-size: 16px; color: var(--ink-muted); }
+
+.skill-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+
+.skill-card {
+  padding: 20px 24px; cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.15s;
+}
+.skill-card:hover { background: var(--bg-high); border-color: var(--border); transform: translateY(-1px); }
+.skill-card:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+.skill-card-name { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600; margin-bottom: 3px; }
+.skill-card-meta { font-size: 12px; color: var(--ink-muted); margin-bottom: 3px; }
+.skill-card-last {
+  font-size: 13px; color: var(--ink-faint); margin-bottom: 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.skill-card .prog-track { height: 3px; }
+
+.empty-hint { font-size: 15px; color: var(--ink-muted); line-height: 1.6; margin-bottom: 24px; }
+
+.hiw-panel {
+  margin-top: 16px; padding: 20px 24px;
+  border-radius: 12px; border: 1px solid var(--border-soft);
+  background: var(--bg-raised); display: none;
+}
+.hiw-panel.open { display: block; }
+.hiw-step { display: flex; align-items: flex-start; gap: 16px; padding: 10px 0; }
+.hiw-step:not(:last-child) { border-bottom: 1px solid var(--border-soft); }
+.hiw-num { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: var(--violet); min-width: 18px; padding-top: 2px; }
+.hiw-text strong { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; display: block; margin-bottom: 2px; }
+.hiw-text span { font-size: 13px; color: var(--ink-muted); line-height: 1.5; }
+
+/* ══════════════════════════════════
+   SCREEN 2 — CALIBRATE
+══════════════════════════════════ */
+.calibrate-headline {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2;
+  margin-bottom: 40px;
+}
+.cal-q { margin-bottom: 28px; }
+.cal-q-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.cal-q-num { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; color: var(--violet); min-width: 16px; }
+.cal-q-label { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: var(--ink); }
+.pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.cal-skill-input { font-family: 'Space Grotesk', sans-serif !important; font-size: 18px !important; }
+
+/* ══════════════════════════════════
+   SCREEN 3 — LOOP
+══════════════════════════════════ */
+.loop-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.loop-context {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 500; color: var(--ink-muted);
+}
+.loop-prog { margin-bottom: 40px; }
+
+/* Move card container */
+.card-container {
+  position: relative; overflow: hidden;
+  margin-bottom: 28px; min-height: 220px;
+}
+
+/* Move card */
+.move-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: 0 4px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+  padding: 28px 28px 24px;
+  position: relative;
+}
+.move-card::before {
+  content: '';
+  position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124,92,255,0.45), transparent);
+}
+.move-eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-faint); margin-bottom: 14px;
+}
+.move-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px; font-weight: 700; letter-spacing: -0.8px; line-height: 1.15;
+  color: var(--ink); margin-bottom: 16px;
+}
+.move-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px; color: var(--ink-muted); line-height: 1.65;
+  margin-bottom: 18px;
+}
+.move-eta {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px; font-weight: 600; color: var(--ink-faint);
+  background: var(--bg-high); border-radius: 99px; padding: 5px 13px;
+}
+
+/* Card animations */
+@keyframes slideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(-110%); opacity: 0; }
+}
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+.card-exit { animation: slideOutLeft 350ms cubic-bezier(0.4,0,0.2,1) forwards; }
+.card-enter { animation: slideInRight 350ms cubic-bezier(0.4,0,0.2,1) both; }
+
+/* Skeleton */
+.move-skeleton {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: 0 4px 28px rgba(0,0,0,0.45);
+  padding: 28px 28px 24px;
+}
+.skel {
+  background: linear-gradient(90deg, var(--bg-high) 25%, rgba(30,37,70,0.8) 50%, var(--bg-high) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px; margin-bottom: 14px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skel-t  { height: 38px; width: 72%; }
+.skel-d1 { height: 16px; width: 100%; }
+.skel-d2 { height: 16px; width: 83%; margin-bottom: 20px; }
+.skel-e  { height: 28px; width: 76px; border-radius: 99px; margin-bottom: 0; }
+
+/* Check-in row */
+.checkin-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+.btn-checkin {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 500;
+  padding: 10px 16px; border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised); color: var(--ink-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, transform 0.12s, box-shadow 0.12s;
+}
+.btn-checkin:hover:not(:disabled) { border-color: rgba(124,92,255,0.4); color: var(--ink); }
+.btn-checkin:disabled { opacity: 0.32; cursor: default; }
+.btn-checkin.tap {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 3px rgba(124,92,255,0.28);
+  border-color: var(--violet); color: var(--ink);
+}
+
+.feedback-line {
+  font-family: 'DM Sans', sans-serif; font-style: italic;
+  font-size: 14px; color: var(--ink-muted);
+  min-height: 22px; opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.feedback-line.show { opacity: 1; }
+
+/* ══════════════════════════════════
+   SCREEN 4 — HISTORY
+══════════════════════════════════ */
+.hist-heading {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 4px;
+}
+.hist-sub { font-size: 13px; color: var(--ink-muted); margin-bottom: 24px; }
+
+.hist-summary { display: flex; gap: 0; margin-bottom: 28px; overflow: hidden; }
+.summary-stat { flex: 1; padding: 18px 20px; }
+.summary-stat:not(:last-child) { border-right: 1px solid var(--border-soft); }
+.stat-val { font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.hist-rows { display: flex; flex-direction: column; gap: 8px; }
+.hist-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 18px;
+  background: var(--bg-raised); border: 1px solid var(--border-soft);
+  border-radius: 12px;
+}
+.hist-day { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; color: var(--ink-faint); min-width: 38px; }
+.hist-title { font-size: 14px; color: var(--ink); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge {
+  font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 700;
+  padding: 4px 10px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+}
+.badge-done  { background: var(--violet-dim); color: var(--violet); }
+.badge-fast  { background: var(--blue-dim);   color: var(--blue); }
+.badge-long  { background: rgba(245,158,11,0.14); color: var(--warning); }
+.badge-stuck { background: rgba(248,113,113,0.14); color: var(--danger); }
+.badge-skip  { background: rgba(74,82,128,0.25);   color: var(--ink-faint); }
+
+/* ── prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* Starfield */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(124,92,255,0.07) 0%, transparent 70%),
-      radial-gradient(1px 1px at 12% 18%, rgba(238,241,251,0.35) 0%, transparent 0%),
-      radial-gradient(1px 1px at 28% 72%, rgba(238,241,251,0.25) 0%, transparent 0%),
-      radial-gradient(1px 1px at 44% 34%, rgba(238,241,251,0.3) 0%, transparent 0%),
-      radial-gradient(1px 1px at 61% 88%, rgba(238,241,251,0.2) 0%, transparent 0%),
-      radial-gradient(1px 1px at 75% 14%, rgba(238,241,251,0.35) 0%, transparent 0%),
-      radial-gradient(1px 1px at 88% 55%, rgba(238,241,251,0.25) 0%, transparent 0%),
-      radial-gradient(1px 1px at 5% 60%, rgba(238,241,251,0.2) 0%, transparent 0%),
-      radial-gradient(1px 1px at 33% 91%, rgba(238,241,251,0.3) 0%, transparent 0%),
-      radial-gradient(1px 1px at 52% 47%, rgba(238,241,251,0.15) 0%, transparent 0%),
-      radial-gradient(1px 1px at 68% 28%, rgba(238,241,251,0.25) 0%, transparent 0%),
-      radial-gradient(1px 1px at 80% 76%, rgba(238,241,251,0.3) 0%, transparent 0%),
-      radial-gradient(1.5px 1.5px at 19% 42%, rgba(238,241,251,0.2) 0%, transparent 0%),
-      radial-gradient(1.5px 1.5px at 92% 33%, rgba(238,241,251,0.25) 0%, transparent 0%),
-      radial-gradient(1px 1px at 57% 66%, rgba(238,241,251,0.15) 0%, transparent 0%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  #app {
-    position: relative;
-    z-index: 1;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 48px 20px 80px;
-  }
-
-  .wordmark {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.5px;
-    color: var(--text);
-    margin-bottom: 56px;
-    align-self: flex-start;
-  }
-
-  .screen {
-    width: 100%;
-    max-width: 520px;
-  }
-
-  /* Fade-rise animation */
-  @keyframes fadeRise {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes glowPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(124,92,255,0.5); }
-    50%  { box-shadow: 0 0 0 6px rgba(124,92,255,0); }
-    100% { box-shadow: 0 0 0 0 rgba(124,92,255,0); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
-
-  .animate-in {
-    animation: fadeRise 0.35s ease both;
-  }
-
-  /* ── Screen 0: Key entry ── */
-  .key-screen h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.8px;
-    margin-bottom: 40px;
-  }
-
-  .error-msg {
-    color: #ff6b6b;
-    font-size: 14px;
-    margin-bottom: 16px;
-    display: none;
-  }
-  .error-msg.visible { display: block; }
-
-  label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-  }
-
-  input[type="password"],
-  input[type="text"] {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    padding: 14px 16px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  input[type="password"]:focus,
-  input[type="text"]:focus {
-    border-color: var(--accent);
-  }
-
-  .helper-text {
-    margin-top: 10px;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  .helper-text a {
-    color: var(--blue);
-    text-decoration: none;
-  }
-  .helper-text a:hover { text-decoration: underline; }
-
-  .btn-primary {
-    margin-top: 28px;
-    width: 100%;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 15px 24px;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-  }
-  .btn-primary:hover { opacity: 0.88; }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-primary:disabled { opacity: 0.45; cursor: default; }
-
-  /* ── Screen 1: Calibrate ── */
-  .calibrate-screen h2 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1.25;
-    margin-bottom: 36px;
-  }
-
-  .question-block {
-    margin-bottom: 28px;
-  }
-
-  .question-block label {
-    margin-bottom: 10px;
-  }
-
-  .btn-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .btn-option {
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: var(--radius);
-    color: var(--muted);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 10px 18px;
-    cursor: pointer;
-    transition: border-color 0.18s, color 0.18s, background 0.18s;
-  }
-
-  .btn-option:hover {
-    border-color: rgba(124,92,255,0.4);
-    color: var(--text);
-  }
-
-  .btn-option.selected {
-    border-color: var(--accent);
-    color: var(--text);
-    background: var(--accent-dim);
-  }
-
-  .divider {
-    border: none;
-    border-top: 1px solid var(--divider);
-    margin: 32px 0;
-  }
-
-  /* ── Screen 2: Loop ── */
-  .context-line {
-    font-size: 13px;
-    color: var(--muted);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .progress-wrap {
-    height: 3px;
-    background: var(--divider);
-    border-radius: 2px;
-    margin-bottom: 40px;
-    overflow: hidden;
-  }
-
-  .progress-bar {
-    height: 100%;
-    background: var(--blue);
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .move-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 10px;
-  }
-
-  .move-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
-    margin-bottom: 14px;
-  }
-
-  .move-description {
-    font-size: 15px;
-    color: rgba(238,241,251,0.8);
-    line-height: 1.65;
-    margin-bottom: 10px;
-  }
-
-  .move-eta {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 32px;
-  }
-
-  .checkin-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .btn-checkin {
-    background: var(--surface);
-    border: 1px solid var(--divider);
-    border-radius: var(--radius);
-    color: var(--muted);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: border-color 0.18s, color 0.18s, background 0.18s;
-  }
-
-  .btn-checkin:hover:not(:disabled) {
-    border-color: rgba(124,92,255,0.5);
-    color: var(--text);
-  }
-
-  .btn-checkin:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
-  .btn-checkin.glow-once {
-    animation: glowPulse 0.6s ease forwards;
-  }
-
-  .feedback-line {
-    font-size: 14px;
-    font-style: italic;
-    color: var(--muted);
-    min-height: 22px;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
-  .feedback-line.visible { opacity: 1; }
-
-  .loading-line {
-    font-size: 14px;
-    color: var(--muted);
-    min-height: 22px;
-    display: none;
-  }
-  .loading-line.visible { display: block; }
-
-  /* Ledger */
-  .ledger {
-    margin-top: 40px;
-    padding-top: 28px;
-    border-top: 1px solid var(--divider);
-  }
-
-  .ledger-heading {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 14px;
-  }
-
-  .ledger-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .ledger-item {
-    font-size: 13px;
-    color: var(--muted);
-    padding: 8px 12px;
-    background: var(--surface);
-    border-radius: 6px;
-    border-left: 2px solid var(--divider);
-  }
-
-  .ledger-item[data-outcome="done"]   { border-left-color: #3da9fc; }
-  .ledger-item[data-outcome="fast"]   { border-left-color: var(--accent); }
-  .ledger-item[data-outcome="long"]   { border-left-color: #8b93b8; }
-  .ledger-item[data-outcome="stuck"]  { border-left-color: #ff9a5c; }
-  .ledger-item[data-outcome="skip"]   { border-left-color: #4a5070; }
-
-  /* Completion screen */
-  .complete-screen {
-    text-align: center;
-  }
-
-  .complete-screen h2 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin-bottom: 16px;
-  }
-
-  .complete-screen p {
-    color: var(--muted);
-    font-size: 15px;
-    margin-bottom: 32px;
-  }
+}
 </style>
 </head>
 <body>
-<div id="app">
-  <div class="wordmark">Cadence</div>
-  <div id="screen-container"></div>
-</div>
+
+<!-- Background layers -->
+<div id="bg-gradients"></div>
+<svg id="bg-noise" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" aria-hidden="true">
+  <filter id="nf"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+  <rect width="100%" height="100%" filter="url(#nf)"/>
+</svg>
+<div id="bg-stars"></div>
+<div id="bg-orb"></div>
+<div id="app"></div>
 
 <script>
+'use strict';
+
+/* ── Constants ── */
+
 const SYSTEM_PROMPT = `You are the planning engine inside Cadence, an adaptive skill-learning tool.
 Output the SINGLE next move for this learner, sized to one focused session (15–50 min).
 
 Rules:
 - Exactly ONE move. Never a list or multi-day plan.
-- Concrete and doable today. "Build an endpoint that returns JSON", not "learn about APIs".
+- Concrete and doable today. "Build an endpoint that returns JSON" not "learn about APIs".
 - Personal to THIS person: use their level, goal, and especially their last outcome.
 - Adapt to last outcome:
-  - done: advance to the next logical step at the same difficulty.
-  - fast: advance AND step up difficulty; they're ahead.
-  - long: advance but keep the next step modest.
-  - stuck: DO NOT advance. Give a SMALLER, more concrete bridging step past the specific wall. This is the most important case — make it genuinely smaller.
-  - skip: re-offer or lightly reframe the skipped move; no guilt, no penalty.
-- Match their goal: "Use it for real" → bias toward visible output; "Understand it" → bias toward small experiments.
-- Tone: warm, plain, quiet. Two sentences max. No emoji, no hype.
+  - done: advance to the next logical step, same difficulty.
+  - fast: advance AND step up difficulty. They are ahead.
+  - long: advance but keep the next step modest. Do not pile on.
+  - stuck: DO NOT advance. Generate a SMALLER, more concrete bridging step past the specific wall. This is the most important case.
+  - skip: re-offer or lightly reframe the skipped move. No guilt, no penalty.
+- Match their "done" goal: Use it for real → bias to visible output. Understand it → bias to small experiments.
+- Tone: warm, plain, quiet. Two sentences max. No emoji. No hype.
 
 Output ONLY valid JSON, no markdown, no preamble:
 {"title": string (max 5 words), "description": string (max 2 sentences), "etaMinutes": integer}`;
 
 const FEEDBACK = {
   done:  'Good. The plan holds.',
-  fast:  'Ahead of plan. Finish pulled in, difficulty up.',
-  long:  'No problem. Finish moved out — the plan stays honest.',
-  stuck: 'Smaller step next. Same wall won\'t get you twice.',
+  fast:  'Ahead of plan. Finish pulled in, bar moved.',
+  long:  'No problem. Finish moved out — still honest.',
+  stuck: "Smaller step next. Same wall won't get you twice.",
   skip:  'Reflowed. No guilt. The plan bends to you.'
 };
 
-const HOURS_TO_TARGET = {
-  'Under 3': 21,
-  '3 to 6': 14,
-  '7 or more': 10
-};
+const HOURS_TO_TARGET = { 'Under 3': 21, '3 to 6': 14, '7 or more': 10 };
 
-const state = {
-  skill: '',
-  level: '',
-  hoursPerWeek: '',
-  doneMeans: '',
-  day: 1,
-  target: 14,
-  history: [],
-  currentMove: null
-};
+const CHECKIN_LABELS = { done: 'Done', fast: 'Done easily', long: 'Took longer', stuck: 'Got stuck', skip: 'Skipped today' };
 
-const container = document.getElementById('screen-container');
+/* ── State / storage ── */
 
-// ── Screens ──────────────────────────────────────────────
+let skills = [];
+let currentIdx = -1;
 
-function showKeyScreen(errorMsg = '') {
-  container.innerHTML = '';
-  const el = document.createElement('div');
-  el.className = 'screen key-screen animate-in';
-  el.innerHTML = `
-    <h1>Cadence</h1>
-    <div class="error-msg${errorMsg ? ' visible' : ''}" id="key-error">${errorMsg}</div>
-    <div class="question-block">
-      <label for="api-key">Your Anthropic API key</label>
-      <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
-      <p class="helper-text">
-        Used only in this browser session. Calls go directly to Anthropic — we never see your key.<br>
-        <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a key at console.anthropic.com</a>
-      </p>
-    </div>
-    <button class="btn-primary" id="key-continue">Continue →</button>
-  `;
-  container.appendChild(el);
+function loadSkills() {
+  try { return JSON.parse(sessionStorage.getItem('cadence_skills') || '[]'); } catch { return []; }
+}
+function saveSkills() {
+  sessionStorage.setItem('cadence_skills', JSON.stringify(skills));
+}
+function getSkill() { return skills[currentIdx]; }
+function mutateSkill(fn) { fn(skills[currentIdx]); saveSkills(); }
 
-  const keyInput = el.querySelector('#api-key');
-  const btn = el.querySelector('#key-continue');
+/* ── Helpers ── */
 
-  btn.addEventListener('click', () => {
-    const val = keyInput.value.trim();
-    if (!val) {
-      keyInput.focus();
-      return;
-    }
-    sessionStorage.setItem('cadence_key', val);
-    showCalibrateScreen();
-  });
-
-  keyInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') btn.click();
-  });
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function showCalibrateScreen() {
-  container.innerHTML = '';
-  const el = document.createElement('div');
-  el.className = 'screen calibrate-screen animate-in';
+function progPct(day, target) {
+  return Math.min(Math.max(((day - 1) / target) * 100, 0), 100).toFixed(2);
+}
+
+function reducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function wait(ms) {
+  return reducedMotion() ? Promise.resolve() : new Promise(r => setTimeout(r, ms));
+}
+
+/* ── Screen management ── */
+
+const app = document.getElementById('app');
+let activeEl = null;
+
+function showScreen(name, opts = {}) {
+  if (activeEl) {
+    activeEl.classList.add('screen-exit');
+    const dying = activeEl;
+    setTimeout(() => dying.remove(), 200);
+    activeEl = null;
+  }
+  const delay = reducedMotion() ? 0 : 140;
+  setTimeout(() => {
+    const el = document.createElement('div');
+    el.className = `screen screen-${name} screen-enter`;
+    app.appendChild(el);
+    activeEl = el;
+    SCREENS[name](el, opts);
+  }, delay);
+}
+
+/* ── SVG icons ── */
+
+const ICON_BACK = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 12.5L5.5 8 10 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/* ══════════════════════════════════
+   SCREENS
+══════════════════════════════════ */
+
+const SCREENS = {};
+
+/* ── Screen 0: Key Entry ── */
+SCREENS.key = function(el, opts) {
+  const errMsg = opts.error || '';
   el.innerHTML = `
-    <h2>What do you want to<br>actually get good at?</h2>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div class="wordmark" style="font-size:30px;margin-bottom:48px">Cadence</div>
+      <div class="key-form">
+        ${errMsg ? `<div class="error-box show" style="margin-bottom:20px">${esc(errMsg)}</div>` : ''}
+        <label class="field-label" for="ki">Your Anthropic API key</label>
+        <input type="password" id="ki" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <p class="helper-text">
+          Lives only in this tab — never stored, never sent to us.<br>
+          <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a key at console.anthropic.com</a>
+        </p>
+        <button class="btn-primary" id="kc" style="width:100%;margin-top:24px">Continue →</button>
+      </div>
+    </div>`;
 
-    <div class="question-block">
-      <label for="skill-input">The skill</label>
-      <input type="text" id="skill-input" placeholder="e.g. Rust, oil painting, public speaking…">
+  const input = el.querySelector('#ki');
+  const btn = el.querySelector('#kc');
+  input.focus();
+
+  function go() {
+    const v = input.value.trim();
+    if (!v) { input.focus(); return; }
+    sessionStorage.setItem('cadence_key', v);
+    showScreen('home');
+  }
+  btn.addEventListener('click', go);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+};
+
+/* ── Screen 1: Home ── */
+SCREENS.home = function(el) {
+  skills = loadSkills();
+  const has = skills.length > 0;
+
+  const cardsHtml = has
+    ? skills.map((s, i) => `
+        <div class="card skill-card" data-i="${i}" role="button" tabindex="0">
+          <div class="skill-card-name">${esc(s.skill)}</div>
+          <div class="skill-card-meta">Day ${s.day} of ~${s.target}</div>
+          <div class="skill-card-last">${s.history.length ? 'Last: ' + esc(s.history[s.history.length - 1].moveTitle) : 'No check-ins yet'}</div>
+          <div class="prog-track"><div class="prog-fill" style="width:${progPct(s.day,s.target)}%;transition:none"></div></div>
+        </div>`).join('')
+    : '';
+
+  el.innerHTML = `
+    <div class="home-header">
+      <div class="wordmark">Cadence</div>
+      <div class="home-tagline">One move. Every day. Any skill.</div>
     </div>
+    ${has ? `<div class="skill-cards">${cardsHtml}</div>` : `<p class="empty-hint">Name a skill. Get your first move in 30 seconds.</p>`}
+    <button class="btn-primary" id="ns" style="width:100%;margin-bottom:40px">Start a new skill</button>
+    <div style="flex:1"></div>
+    <div style="text-align:center">
+      <button class="btn-ghost" id="hiw-t">How it works</button>
+      <div class="hiw-panel" id="hiw-p">
+        <div class="hiw-step">
+          <div class="hiw-num">1</div>
+          <div class="hiw-text"><strong>Name it</strong><span>Tell Cadence the skill, your starting point, and how much time you have.</span></div>
+        </div>
+        <div class="hiw-step">
+          <div class="hiw-num">2</div>
+          <div class="hiw-text"><strong>One move</strong><span>You get exactly one concrete action — no overwhelm, no plans to plan.</span></div>
+        </div>
+        <div class="hiw-step">
+          <div class="hiw-num">3</div>
+          <div class="hiw-text"><strong>Check in, it adapts</strong><span>Stuck? The next step gets smaller. Flying? The plan accelerates. No guilt.</span></div>
+        </div>
+      </div>
+    </div>`;
 
-    <div class="question-block">
-      <label>Where you're starting</label>
-      <div class="btn-group" data-group="level">
-        <button class="btn-option" data-val="Beginner">Beginner</button>
-        <button class="btn-option" data-val="Rusty basics">Rusty basics</button>
-        <button class="btn-option" data-val="Want depth">Want depth</button>
+  el.querySelector('#ns').addEventListener('click', () => showScreen('calibrate'));
+  el.querySelector('#hiw-t').addEventListener('click', () => el.querySelector('#hiw-p').classList.toggle('open'));
+
+  el.querySelectorAll('.skill-card').forEach(card => {
+    const open = () => { currentIdx = parseInt(card.dataset.i, 10); showScreen('loop'); };
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
+};
+
+/* ── Screen 2: Calibrate ── */
+SCREENS.calibrate = function(el) {
+  el.innerHTML = `
+    <button class="btn-back" id="cb">${ICON_BACK} Back</button>
+    <h2 class="calibrate-headline">What do you want to<br>actually get good at?</h2>
+
+    <div class="cal-q">
+      <div class="cal-q-header"><span class="cal-q-num">i</span><span class="cal-q-label">The skill</span></div>
+      <input type="text" id="si" class="cal-skill-input" placeholder="Rust, oil painting, public speaking…">
+    </div>
+    <div class="cal-q">
+      <div class="cal-q-header"><span class="cal-q-num">ii</span><span class="cal-q-label">Where you're starting</span></div>
+      <div class="pill-group" data-g="level">
+        <button class="btn-pill" data-v="Beginner">Beginner</button>
+        <button class="btn-pill" data-v="Rusty basics">Rusty basics</button>
+        <button class="btn-pill" data-v="Want depth">Want depth</button>
+      </div>
+    </div>
+    <div class="cal-q">
+      <div class="cal-q-header"><span class="cal-q-num">iii</span><span class="cal-q-label">Hours a week, honestly</span></div>
+      <div class="pill-group" data-g="hours">
+        <button class="btn-pill" data-v="Under 3">Under 3</button>
+        <button class="btn-pill" data-v="3 to 6">3 to 6</button>
+        <button class="btn-pill" data-v="7 or more">7 or more</button>
+      </div>
+    </div>
+    <div class="cal-q">
+      <div class="cal-q-header"><span class="cal-q-num">iv</span><span class="cal-q-label">What done looks like</span></div>
+      <div class="pill-group" data-g="done">
+        <button class="btn-pill" data-v="Understand it">Understand it</button>
+        <button class="btn-pill" data-v="Build a thing">Build a thing</button>
+        <button class="btn-pill" data-v="Use it for real">Use it for real</button>
       </div>
     </div>
 
-    <div class="question-block">
-      <label>Hours a week, honestly</label>
-      <div class="btn-group" data-group="hours">
-        <button class="btn-option" data-val="Under 3">Under 3</button>
-        <button class="btn-option" data-val="3 to 6">3 to 6</button>
-        <button class="btn-option" data-val="7 or more">7 or more</button>
-      </div>
-    </div>
+    <div class="divider"></div>
+    <button class="btn-primary" id="bb" disabled>Build my plan →</button>
+    <div class="error-box" id="cal-err" style="margin-top:16px">
+      <span id="cal-err-msg"></span>
+      <button class="btn-ghost" id="cal-retry" style="margin-left:auto;white-space:nowrap">Retry</button>
+    </div>`;
 
-    <div class="question-block">
-      <label>What done means</label>
-      <div class="btn-group" data-group="done">
-        <button class="btn-option" data-val="Understand it">Understand it</button>
-        <button class="btn-option" data-val="Build a thing">Build a thing</button>
-        <button class="btn-option" data-val="Use it for real">Use it for real</button>
-      </div>
-    </div>
+  el.querySelector('#cb').addEventListener('click', () => showScreen('home'));
 
-    <hr class="divider">
-    <button class="btn-primary" id="build-plan" disabled>Build my plan →</button>
-  `;
-  container.appendChild(el);
+  const skillIn = el.querySelector('#si');
+  const buildBtn = el.querySelector('#bb');
+  const sel = { level: '', hours: '', done: '' };
 
-  const skillInput = el.querySelector('#skill-input');
-  const buildBtn = el.querySelector('#build-plan');
-  let selections = { level: '', hours: '', done: '' };
+  skillIn.focus();
 
   function checkReady() {
-    const ready = skillInput.value.trim() && selections.level && selections.hours && selections.done;
-    buildBtn.disabled = !ready;
+    buildBtn.disabled = !(skillIn.value.trim() && sel.level && sel.hours && sel.done);
   }
+  skillIn.addEventListener('input', checkReady);
 
-  skillInput.addEventListener('input', checkReady);
-
-  el.querySelectorAll('.btn-group').forEach(group => {
-    group.addEventListener('click', e => {
-      const btn = e.target.closest('.btn-option');
-      if (!btn) return;
-      group.querySelectorAll('.btn-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selections[group.dataset.group] = btn.dataset.val;
+  el.querySelectorAll('.pill-group').forEach(grp => {
+    grp.addEventListener('click', e => {
+      const b = e.target.closest('.btn-pill');
+      if (!b) return;
+      grp.querySelectorAll('.btn-pill').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      sel[grp.dataset.g] = b.dataset.v;
       checkReady();
     });
   });
 
-  buildBtn.addEventListener('click', async () => {
-    if (buildBtn.disabled) return;
-    state.skill = skillInput.value.trim();
-    state.level = selections.level;
-    state.hoursPerWeek = selections.hours;
-    state.doneMeans = selections.done;
-    state.target = HOURS_TO_TARGET[state.hoursPerWeek] || 14;
-    state.day = 1;
-    state.history = [];
-    state.currentMove = null;
+  async function doBuild() {
+    const state = {
+      skill: skillIn.value.trim(),
+      level: sel.level,
+      hoursPerWeek: sel.hours,
+      doneMeans: sel.done,
+      day: 1,
+      target: HOURS_TO_TARGET[sel.hours] || 14,
+      history: [],
+      currentMove: null
+    };
 
     buildBtn.disabled = true;
     buildBtn.textContent = 'Building…';
+    el.querySelector('#cal-err').classList.remove('show');
 
-    const move = await getNextMove(state, 'start');
-    if (!move) return;
-    state.currentMove = move;
-    showLoopScreen();
-  });
-}
-
-function showLoopScreen() {
-  container.innerHTML = '';
-  const el = document.createElement('div');
-  el.className = 'screen loop-screen animate-in';
-  el.id = 'loop-screen';
-  container.appendChild(el);
-  renderLoop(el);
-}
-
-function renderLoop(el) {
-  const pct = Math.min(((state.day - 1) / state.target) * 100, 100);
-  const move = state.currentMove;
-
-  el.innerHTML = `
-    <div class="context-line">Learning ${escHtml(state.skill)} · Day ${state.day} of ~${state.target}</div>
-    <div class="progress-wrap">
-      <div class="progress-bar" id="prog-bar" style="width:0%"></div>
-    </div>
-
-    <div class="move-label">Your one move</div>
-    <div class="move-title">${escHtml(move.title)}</div>
-    <div class="move-description">${escHtml(move.description)}</div>
-    <div class="move-eta">${move.etaMinutes} min</div>
-
-    <div class="checkin-row">
-      <button class="btn-checkin" data-outcome="done">Done</button>
-      <button class="btn-checkin" data-outcome="fast">Done easily</button>
-      <button class="btn-checkin" data-outcome="long">Took longer</button>
-      <button class="btn-checkin" data-outcome="stuck">Got stuck</button>
-      <button class="btn-checkin" data-outcome="skip">Skipped today</button>
-    </div>
-
-    <div class="feedback-line" id="feedback"></div>
-    <div class="loading-line" id="loading">Getting your next move…</div>
-
-    ${state.history.length ? renderLedger() : ''}
-  `;
-
-  // Animate progress bar after paint
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      const bar = el.querySelector('#prog-bar');
-      if (bar) bar.style.width = pct + '%';
-    });
-  });
-
-  el.querySelectorAll('.btn-checkin').forEach(btn => {
-    btn.addEventListener('click', () => handleCheckin(btn.dataset.outcome));
-  });
-}
-
-function renderLedger() {
-  const items = state.history.slice().reverse().map(h =>
-    `<li class="ledger-item" data-outcome="${escHtml(h.outcome)}">Day ${h.day} — ${escHtml(h.moveTitle)} — ${escHtml(h.outcome)}</li>`
-  ).join('');
-  return `
-    <div class="ledger">
-      <div class="ledger-heading">So far</div>
-      <ul class="ledger-list">${items}</ul>
-    </div>
-  `;
-}
-
-async function handleCheckin(outcome) {
-  const el = document.getElementById('loop-screen');
-  if (!el) return;
-
-  // Disable all check-in buttons
-  el.querySelectorAll('.btn-checkin').forEach(b => {
-    b.disabled = true;
-    if (b.dataset.outcome === outcome) b.classList.add('glow-once');
-  });
-
-  // Show feedback
-  const feedback = el.querySelector('#feedback');
-  feedback.textContent = FEEDBACK[outcome];
-  feedback.classList.add('visible');
-
-  // Show loading
-  const loading = el.querySelector('#loading');
-  loading.classList.add('visible');
-
-  // Update state
-  state.history.push({ day: state.day, moveTitle: state.currentMove.title, outcome });
-
-  if (outcome === 'done') {
-    state.day++;
-  } else if (outcome === 'fast') {
-    state.day++;
-    state.target = Math.max(state.day, state.target - 1);
-  } else if (outcome === 'long') {
-    state.day++;
-    state.target++;
-  } else if (outcome === 'stuck') {
-    state.day++;
-  } else if (outcome === 'skip') {
-    state.day++;
-    state.target++;
+    try {
+      const move = await getNextMove(state, 'start');
+      if (!move) return;
+      state.currentMove = move;
+      skills.push(state);
+      currentIdx = skills.length - 1;
+      saveSkills();
+      showScreen('loop');
+    } catch (err) {
+      buildBtn.disabled = false;
+      buildBtn.textContent = 'Build my plan →';
+      const errEl = el.querySelector('#cal-err');
+      errEl.classList.add('show');
+      el.querySelector('#cal-err-msg').textContent = err.message || 'Something went wrong.';
+    }
   }
 
-  // Check completion
-  if (state.day > state.target) {
-    showCompleteScreen();
+  buildBtn.addEventListener('click', doBuild);
+  el.querySelector('#cal-retry').addEventListener('click', doBuild);
+};
+
+/* ── Screen 3: Loop ── */
+SCREENS.loop = function(el) {
+  const s = getSkill();
+  if (!s) { showScreen('home'); return; }
+
+  el.innerHTML = `
+    <div class="loop-topbar">
+      <div class="loop-context" id="ctx">${esc(s.skill)} · Day ${s.day} of ~${s.target}</div>
+      <button class="btn-ghost" id="hist-link">History</button>
+    </div>
+    <div class="loop-prog"><div class="prog-track"><div class="prog-fill" id="pf" style="width:0%;transition:none"></div></div></div>
+    <div class="card-container" id="cc">${renderCard(s.currentMove)}</div>
+    <div class="checkin-row" id="cr">
+      ${Object.entries(CHECKIN_LABELS).map(([k,v]) => `<button class="btn-checkin" data-o="${k}">${v}</button>`).join('')}
+    </div>
+    <div class="feedback-line" id="fb"></div>
+    <div class="error-box" id="loop-err" style="margin-top:16px">
+      <span id="loop-err-msg"></span>
+      <button class="btn-ghost" id="loop-retry" style="margin-left:auto;white-space:nowrap">Retry</button>
+    </div>`;
+
+  // Animate bar in
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const pf = el.querySelector('#pf');
+    if (pf) { pf.style.transition = 'width 700ms cubic-bezier(0.2,0.9,0.2,1)'; pf.style.width = progPct(s.day, s.target) + '%'; }
+  }));
+
+  el.querySelector('#hist-link').addEventListener('click', () => showScreen('history'));
+
+  setupCheckin(el);
+};
+
+function renderCard(move, cls = '') {
+  if (!move) return renderSkel();
+  return `<div class="move-card${cls ? ' ' + cls : ''}">
+    <div class="move-eyebrow">Your one move</div>
+    <div class="move-title">${esc(move.title)}</div>
+    <div class="move-desc">${esc(move.description)}</div>
+    <div class="move-eta">~${move.etaMinutes} min</div>
+  </div>`;
+}
+
+function renderSkel() {
+  return `<div class="move-skeleton">
+    <div class="skel skel-t"></div>
+    <div class="skel skel-d1"></div>
+    <div class="skel skel-d2"></div>
+    <div class="skel skel-e"></div>
+  </div>`;
+}
+
+function setupCheckin(el) {
+  let busy = false;
+  let lastOutcome = null;
+
+  el.querySelector('#cr').addEventListener('click', async e => {
+    const btn = e.target.closest('.btn-checkin');
+    if (!btn || busy) return;
+    busy = true;
+    lastOutcome = btn.dataset.o;
+    await doCheckin(btn.dataset.o, el);
+    busy = false;
+  });
+
+  el.querySelector('#loop-retry').addEventListener('click', async () => {
+    if (busy) return;
+    busy = true;
+    el.querySelector('#loop-err').classList.remove('show');
+    const s = getSkill();
+    try {
+      const move = await getNextMove(s, lastOutcome || 'done');
+      if (move) finishCheckin(el, s, move);
+    } catch (err) {
+      showLoopErr(el, err.message);
+    }
+    busy = false;
+  });
+}
+
+async function doCheckin(outcome, el) {
+  const s = getSkill();
+
+  // Disable buttons, tap effect
+  const buttons = el.querySelectorAll('.btn-checkin');
+  buttons.forEach(b => b.disabled = true);
+  const tapped = el.querySelector(`[data-o="${outcome}"]`);
+  if (tapped) {
+    tapped.classList.add('tap');
+    setTimeout(() => tapped.classList.remove('tap'), 280);
+  }
+
+  // Feedback
+  const fb = el.querySelector('#fb');
+  fb.textContent = FEEDBACK[outcome];
+  fb.classList.add('show');
+
+  // Update state
+  s.history.push({ day: s.day, moveTitle: s.currentMove.title, outcome });
+  if (outcome === 'done')       { s.day++; }
+  else if (outcome === 'fast')  { s.day++; s.target = Math.max(s.day, s.target - 1); }
+  else if (outcome === 'long')  { s.day++; s.target++; }
+  else if (outcome === 'stuck') { s.day++; }
+  else if (outcome === 'skip')  { s.day++; s.target++; }
+  mutateSkill(() => {});  // save
+
+  // Update context line
+  const ctx = el.querySelector('#ctx');
+  if (ctx) ctx.textContent = `${s.skill} · Day ${s.day} of ~${s.target}`;
+
+  // Completion check
+  if (s.day > s.target) {
+    await wait(700);
+    showScreen('complete');
     return;
   }
 
-  const move = await getNextMove(state, outcome);
-  if (!move) return;
-  state.currentMove = move;
+  // Slide out old card
+  const cc = el.querySelector('#cc');
+  const oldCard = cc.querySelector('.move-card');
+  if (oldCard) { oldCard.classList.add('card-exit'); }
+  await wait(350);
+  if (!el.isConnected) return;
+  cc.innerHTML = renderSkel();
 
-  showLoopScreen();
+  // Animate bar to new value
+  const pf = el.querySelector('#pf');
+  if (pf) pf.style.width = progPct(s.day, s.target) + '%';
+
+  // Fetch
+  el.querySelector('#loop-err').classList.remove('show');
+  let move;
+  try {
+    move = await getNextMove(s, outcome);
+  } catch (err) {
+    if (!el.isConnected) return;
+    showLoopErr(el, err.message);
+    el.querySelectorAll('.btn-checkin').forEach(b => b.disabled = false);
+    return;
+  }
+
+  if (!move || !el.isConnected) return;
+  finishCheckin(el, s, move);
 }
 
-function showCompleteScreen() {
-  container.innerHTML = '';
-  const el = document.createElement('div');
-  el.className = 'screen complete-screen animate-in';
+function finishCheckin(el, s, move) {
+  s.currentMove = move;
+  mutateSkill(() => {});
+  const cc = el.querySelector('#cc');
+  if (cc) cc.innerHTML = renderCard(move, 'card-enter');
+  el.querySelectorAll('.btn-checkin').forEach(b => b.disabled = false);
+}
+
+function showLoopErr(el, msg) {
+  const errEl = el.querySelector('#loop-err');
+  if (errEl) errEl.classList.add('show');
+  const msgEl = el.querySelector('#loop-err-msg');
+  if (msgEl) msgEl.textContent = msg || 'Something went wrong.';
+}
+
+/* ── Screen: Complete ── */
+SCREENS.complete = function(el) {
+  const s = getSkill() || {};
   el.innerHTML = `
-    <h2>Plan complete.</h2>
-    <p>You made it to day ${state.day - 1} of ${state.target} for <strong>${escHtml(state.skill)}</strong>.<br>
-    That's real progress — not a plan, the thing itself.</p>
-    <button class="btn-primary" id="restart-btn">Start a new skill →</button>
-    ${state.history.length ? renderLedger() : ''}
-  `;
-  container.appendChild(el);
-  el.querySelector('#restart-btn').addEventListener('click', () => {
-    Object.assign(state, { skill: '', level: '', hoursPerWeek: '', doneMeans: '', day: 1, target: 14, history: [], currentMove: null });
-    showCalibrateScreen();
-  });
-}
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:24px;padding:40px 0">
+      <div class="wordmark" style="font-size:26px">Cadence</div>
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;letter-spacing:-0.8px">Plan complete.</h2>
+      <p style="font-size:16px;color:var(--ink-muted);max-width:300px;line-height:1.65">
+        You made it through ${esc(String(s.skill || 'your skill'))}.<br>
+        That's real progress — the thing itself, not a plan.
+      </p>
+      <button class="btn-primary" id="cn">Start a new skill →</button>
+      <button class="btn-ghost" id="chome">Back to home</button>
+    </div>`;
+  el.querySelector('#cn').addEventListener('click', () => showScreen('calibrate'));
+  el.querySelector('#chome').addEventListener('click', () => showScreen('home'));
+};
 
-// ── API ───────────────────────────────────────────────────
+/* ── Screen 4: History ── */
+SCREENS.history = function(el) {
+  const s = getSkill();
+  if (!s) { showScreen('loop'); return; }
+
+  const done = s.history.filter(h => h.outcome !== 'skip').length;
+  const rowsHtml = s.history.length
+    ? s.history.slice().reverse().map(h => `
+        <div class="hist-row">
+          <div class="hist-day">Day ${h.day}</div>
+          <div class="hist-title">${esc(h.moveTitle)}</div>
+          <div class="badge badge-${h.outcome}">${h.outcome}</div>
+        </div>`).join('')
+    : `<p style="color:var(--ink-muted);font-size:14px;padding:12px 0">No check-ins yet.</p>`;
+
+  el.innerHTML = `
+    <button class="btn-back" id="hb">${ICON_BACK} Back</button>
+    <h2 class="hist-heading">Your run on ${esc(s.skill)}</h2>
+    <p class="hist-sub">Adaptive log</p>
+    <div class="card hist-summary">
+      <div class="summary-stat"><div class="stat-val">${s.day - 1}</div><div class="stat-label">Days in</div></div>
+      <div class="summary-stat"><div class="stat-val">${done}</div><div class="stat-label">Completed</div></div>
+      <div class="summary-stat"><div class="stat-val">~${s.target}</div><div class="stat-label">Finish line</div></div>
+    </div>
+    <div class="hist-rows">${rowsHtml}</div>`;
+
+  el.querySelector('#hb').addEventListener('click', () => showScreen('loop'));
+};
+
+/* ── API ── */
 
 async function getNextMove(state, outcome) {
   const key = sessionStorage.getItem('cadence_key');
@@ -718,22 +970,12 @@ async function getNextMove(state, outcome) {
     .map(h => `Day ${h.day} — ${h.moveTitle} — ${h.outcome}`)
     .join('\n') || 'None yet';
 
-  const payload = {
+  const body = {
     model: 'claude-haiku-4-5',
-    max_tokens: 256,
+    max_tokens: 300,
     system: SYSTEM_PROMPT,
-    messages: [{
-      role: 'user',
-      content: `Skill: ${state.skill}
-Level: ${state.level}
-Hours per week: ${state.hoursPerWeek}
-What "done" means: ${state.doneMeans}
-Current day: ${state.day} of ~${state.target}
-Last outcome: ${outcome}
-History:
-${historyText}
-
-Give the single next move.`
+    messages: [{ role: 'user', content:
+      `Skill: ${state.skill}\nLevel: ${state.level}\nHours per week: ${state.hoursPerWeek}\nWhat "done" means: ${state.doneMeans}\nCurrent day: ${state.day} of ~${state.target}\nLast outcome: ${outcome}\nHistory:\n${historyText}\n\nGive the single next move.`
     }]
   };
 
@@ -745,73 +987,52 @@ Give the single next move.`
       'anthropic-dangerous-direct-browser-access': 'true',
       'content-type': 'application/json'
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(body)
   });
 
-  let response;
-  try {
-    response = await doFetch();
-  } catch (err) {
-    return fallback(state.skill);
-  }
+  let res;
+  try { res = await doFetch(); }
+  catch { throw new Error('Network error — check your connection.'); }
 
-  if (response.status === 401) {
+  if (res.status === 401) {
     sessionStorage.removeItem('cadence_key');
-    showKeyScreen('Invalid API key — check and re-enter.');
+    showScreen('key', { error: 'Invalid key — try again.' });
     return null;
   }
+  if (!res.ok) throw new Error(`API error ${res.status} — please try again.`);
 
-  const data = await response.json();
-  let text = data.content?.[0]?.text || '';
-  text = text.replace(/```json|```/g, '').trim();
+  const data = await res.json();
+  const text = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
 
-  // Try parse
-  try {
-    return JSON.parse(text);
-  } catch {
-    // Retry once
-    let response2;
-    try {
-      response2 = await doFetch();
-    } catch {
-      return fallback(state.skill);
-    }
-    if (response2.status === 401) {
-      sessionStorage.removeItem('cadence_key');
-      showKeyScreen('Invalid API key — check and re-enter.');
-      return null;
-    }
-    const data2 = await response2.json();
-    let text2 = data2.content?.[0]?.text || '';
-    text2 = text2.replace(/```json|```/g, '').trim();
-    try {
-      return JSON.parse(text2);
-    } catch {
-      return fallback(state.skill);
-    }
+  try { return JSON.parse(text); }
+  catch {
+    return { title: 'Next small step', description: `Spend 20 focused minutes on the next piece of ${state.skill}.`, etaMinutes: 20 };
   }
 }
 
-function fallback(skill) {
-  return { title: 'Next small step', description: `Spend 20 minutes on the next small piece of ${skill}.`, etaMinutes: 20 };
-}
+/* ── Stars ── */
 
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+(function generateStars() {
+  const container = document.getElementById('bg-stars');
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 110; i++) {
+    const d = document.createElement('div');
+    d.className = 'star';
+    const sz = Math.random() < 0.65 ? 1 : 1.5;
+    d.style.cssText = `width:${sz}px;height:${sz}px;top:${(Math.random()*100).toFixed(2)}%;left:${(Math.random()*100).toFixed(2)}%;opacity:${(0.18+Math.random()*0.42).toFixed(2)}`;
+    frag.appendChild(d);
+  }
+  container.appendChild(frag);
+})();
 
-// ── Boot ─────────────────────────────────────────────────
+/* ── Boot ── */
 
 (function boot() {
-  const key = sessionStorage.getItem('cadence_key');
-  if (key) {
-    showCalibrateScreen();
+  skills = loadSkills();
+  if (!sessionStorage.getItem('cadence_key')) {
+    showScreen('key');
   } else {
-    showKeyScreen();
+    showScreen('home');
   }
 })();
 </script>
