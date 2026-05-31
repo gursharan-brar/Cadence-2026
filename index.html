@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0b0e1a;
+    --surface: #141a2e;
+    --text: #eef1fb;
+    --muted: #8b93b8;
+    --accent: #7c5cff;
+    --accent-dim: rgba(124,92,255,0.15);
+    --blue: #3da9fc;
+    --divider: rgba(139,147,184,0.12);
+    --radius: 8px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Starfield */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(124,92,255,0.07) 0%, transparent 70%),
+      radial-gradient(1px 1px at 12% 18%, rgba(238,241,251,0.35) 0%, transparent 0%),
+      radial-gradient(1px 1px at 28% 72%, rgba(238,241,251,0.25) 0%, transparent 0%),
+      radial-gradient(1px 1px at 44% 34%, rgba(238,241,251,0.3) 0%, transparent 0%),
+      radial-gradient(1px 1px at 61% 88%, rgba(238,241,251,0.2) 0%, transparent 0%),
+      radial-gradient(1px 1px at 75% 14%, rgba(238,241,251,0.35) 0%, transparent 0%),
+      radial-gradient(1px 1px at 88% 55%, rgba(238,241,251,0.25) 0%, transparent 0%),
+      radial-gradient(1px 1px at 5% 60%, rgba(238,241,251,0.2) 0%, transparent 0%),
+      radial-gradient(1px 1px at 33% 91%, rgba(238,241,251,0.3) 0%, transparent 0%),
+      radial-gradient(1px 1px at 52% 47%, rgba(238,241,251,0.15) 0%, transparent 0%),
+      radial-gradient(1px 1px at 68% 28%, rgba(238,241,251,0.25) 0%, transparent 0%),
+      radial-gradient(1px 1px at 80% 76%, rgba(238,241,251,0.3) 0%, transparent 0%),
+      radial-gradient(1.5px 1.5px at 19% 42%, rgba(238,241,251,0.2) 0%, transparent 0%),
+      radial-gradient(1.5px 1.5px at 92% 33%, rgba(238,241,251,0.25) 0%, transparent 0%),
+      radial-gradient(1px 1px at 57% 66%, rgba(238,241,251,0.15) 0%, transparent 0%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px 80px;
+  }
+
+  .wordmark {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 56px;
+    align-self: flex-start;
+  }
+
+  .screen {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* Fade-rise animation */
+  @keyframes fadeRise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes glowPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(124,92,255,0.5); }
+    50%  { box-shadow: 0 0 0 6px rgba(124,92,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(124,92,255,0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  .animate-in {
+    animation: fadeRise 0.35s ease both;
+  }
+
+  /* ── Screen 0: Key entry ── */
+  .key-screen h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    margin-bottom: 40px;
+  }
+
+  .error-msg {
+    color: #ff6b6b;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  input[type="password"],
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="password"]:focus,
+  input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  .helper-text {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .helper-text a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+  .helper-text a:hover { text-decoration: underline; }
+
+  .btn-primary {
+    margin-top: 28px;
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 15px 24px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.45; cursor: default; }
+
+  /* ── Screen 1: Calibrate ── */
+  .calibrate-screen h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.25;
+    margin-bottom: 36px;
+  }
+
+  .question-block {
+    margin-bottom: 28px;
+  }
+
+  .question-block label {
+    margin-bottom: 10px;
+  }
+
+  .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-option {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: border-color 0.18s, color 0.18s, background 0.18s;
+  }
+
+  .btn-option:hover {
+    border-color: rgba(124,92,255,0.4);
+    color: var(--text);
+  }
+
+  .btn-option.selected {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--accent-dim);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--divider);
+    margin: 32px 0;
+  }
+
+  /* ── Screen 2: Loop ── */
+  .context-line {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .progress-wrap {
+    height: 3px;
+    background: var(--divider);
+    border-radius: 2px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .move-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  .move-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+
+  .move-description {
+    font-size: 15px;
+    color: rgba(238,241,251,0.8);
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+
+  .move-eta {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .checkin-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .btn-checkin {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: border-color 0.18s, color 0.18s, background 0.18s;
+  }
+
+  .btn-checkin:hover:not(:disabled) {
+    border-color: rgba(124,92,255,0.5);
+    color: var(--text);
+  }
+
+  .btn-checkin:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .btn-checkin.glow-once {
+    animation: glowPulse 0.6s ease forwards;
+  }
+
+  .feedback-line {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--muted);
+    min-height: 22px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .feedback-line.visible { opacity: 1; }
+
+  .loading-line {
+    font-size: 14px;
+    color: var(--muted);
+    min-height: 22px;
+    display: none;
+  }
+  .loading-line.visible { display: block; }
+
+  /* Ledger */
+  .ledger {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--divider);
+  }
+
+  .ledger-heading {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+
+  .ledger-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ledger-item {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 8px 12px;
+    background: var(--surface);
+    border-radius: 6px;
+    border-left: 2px solid var(--divider);
+  }
+
+  .ledger-item[data-outcome="done"]   { border-left-color: #3da9fc; }
+  .ledger-item[data-outcome="fast"]   { border-left-color: var(--accent); }
+  .ledger-item[data-outcome="long"]   { border-left-color: #8b93b8; }
+  .ledger-item[data-outcome="stuck"]  { border-left-color: #ff9a5c; }
+  .ledger-item[data-outcome="skip"]   { border-left-color: #4a5070; }
+
+  /* Completion screen */
+  .complete-screen {
+    text-align: center;
+  }
+
+  .complete-screen h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+  }
+
+  .complete-screen p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 32px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="wordmark">Cadence</div>
+  <div id="screen-container"></div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are the planning engine inside Cadence, an adaptive skill-learning tool.
+Output the SINGLE next move for this learner, sized to one focused session (15–50 min).
+
+Rules:
+- Exactly ONE move. Never a list or multi-day plan.
+- Concrete and doable today. "Build an endpoint that returns JSON", not "learn about APIs".
+- Personal to THIS person: use their level, goal, and especially their last outcome.
+- Adapt to last outcome:
+  - done: advance to the next logical step at the same difficulty.
+  - fast: advance AND step up difficulty; they're ahead.
+  - long: advance but keep the next step modest.
+  - stuck: DO NOT advance. Give a SMALLER, more concrete bridging step past the specific wall. This is the most important case — make it genuinely smaller.
+  - skip: re-offer or lightly reframe the skipped move; no guilt, no penalty.
+- Match their goal: "Use it for real" → bias toward visible output; "Understand it" → bias toward small experiments.
+- Tone: warm, plain, quiet. Two sentences max. No emoji, no hype.
+
+Output ONLY valid JSON, no markdown, no preamble:
+{"title": string (max 5 words), "description": string (max 2 sentences), "etaMinutes": integer}`;
+
+const FEEDBACK = {
+  done:  'Good. The plan holds.',
+  fast:  'Ahead of plan. Finish pulled in, difficulty up.',
+  long:  'No problem. Finish moved out — the plan stays honest.',
+  stuck: 'Smaller step next. Same wall won\'t get you twice.',
+  skip:  'Reflowed. No guilt. The plan bends to you.'
+};
+
+const HOURS_TO_TARGET = {
+  'Under 3': 21,
+  '3 to 6': 14,
+  '7 or more': 10
+};
+
+const state = {
+  skill: '',
+  level: '',
+  hoursPerWeek: '',
+  doneMeans: '',
+  day: 1,
+  target: 14,
+  history: [],
+  currentMove: null
+};
+
+const container = document.getElementById('screen-container');
+
+// ── Screens ──────────────────────────────────────────────
+
+function showKeyScreen(errorMsg = '') {
+  container.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'screen key-screen animate-in';
+  el.innerHTML = `
+    <h1>Cadence</h1>
+    <div class="error-msg${errorMsg ? ' visible' : ''}" id="key-error">${errorMsg}</div>
+    <div class="question-block">
+      <label for="api-key">Your Anthropic API key</label>
+      <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+      <p class="helper-text">
+        Used only in this browser session. Calls go directly to Anthropic — we never see your key.<br>
+        <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a key at console.anthropic.com</a>
+      </p>
+    </div>
+    <button class="btn-primary" id="key-continue">Continue →</button>
+  `;
+  container.appendChild(el);
+
+  const keyInput = el.querySelector('#api-key');
+  const btn = el.querySelector('#key-continue');
+
+  btn.addEventListener('click', () => {
+    const val = keyInput.value.trim();
+    if (!val) {
+      keyInput.focus();
+      return;
+    }
+    sessionStorage.setItem('cadence_key', val);
+    showCalibrateScreen();
+  });
+
+  keyInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') btn.click();
+  });
+}
+
+function showCalibrateScreen() {
+  container.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'screen calibrate-screen animate-in';
+  el.innerHTML = `
+    <h2>What do you want to<br>actually get good at?</h2>
+
+    <div class="question-block">
+      <label for="skill-input">The skill</label>
+      <input type="text" id="skill-input" placeholder="e.g. Rust, oil painting, public speaking…">
+    </div>
+
+    <div class="question-block">
+      <label>Where you're starting</label>
+      <div class="btn-group" data-group="level">
+        <button class="btn-option" data-val="Beginner">Beginner</button>
+        <button class="btn-option" data-val="Rusty basics">Rusty basics</button>
+        <button class="btn-option" data-val="Want depth">Want depth</button>
+      </div>
+    </div>
+
+    <div class="question-block">
+      <label>Hours a week, honestly</label>
+      <div class="btn-group" data-group="hours">
+        <button class="btn-option" data-val="Under 3">Under 3</button>
+        <button class="btn-option" data-val="3 to 6">3 to 6</button>
+        <button class="btn-option" data-val="7 or more">7 or more</button>
+      </div>
+    </div>
+
+    <div class="question-block">
+      <label>What done means</label>
+      <div class="btn-group" data-group="done">
+        <button class="btn-option" data-val="Understand it">Understand it</button>
+        <button class="btn-option" data-val="Build a thing">Build a thing</button>
+        <button class="btn-option" data-val="Use it for real">Use it for real</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <button class="btn-primary" id="build-plan" disabled>Build my plan →</button>
+  `;
+  container.appendChild(el);
+
+  const skillInput = el.querySelector('#skill-input');
+  const buildBtn = el.querySelector('#build-plan');
+  let selections = { level: '', hours: '', done: '' };
+
+  function checkReady() {
+    const ready = skillInput.value.trim() && selections.level && selections.hours && selections.done;
+    buildBtn.disabled = !ready;
+  }
+
+  skillInput.addEventListener('input', checkReady);
+
+  el.querySelectorAll('.btn-group').forEach(group => {
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-option');
+      if (!btn) return;
+      group.querySelectorAll('.btn-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selections[group.dataset.group] = btn.dataset.val;
+      checkReady();
+    });
+  });
+
+  buildBtn.addEventListener('click', async () => {
+    if (buildBtn.disabled) return;
+    state.skill = skillInput.value.trim();
+    state.level = selections.level;
+    state.hoursPerWeek = selections.hours;
+    state.doneMeans = selections.done;
+    state.target = HOURS_TO_TARGET[state.hoursPerWeek] || 14;
+    state.day = 1;
+    state.history = [];
+    state.currentMove = null;
+
+    buildBtn.disabled = true;
+    buildBtn.textContent = 'Building…';
+
+    const move = await getNextMove(state, 'start');
+    if (!move) return;
+    state.currentMove = move;
+    showLoopScreen();
+  });
+}
+
+function showLoopScreen() {
+  container.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'screen loop-screen animate-in';
+  el.id = 'loop-screen';
+  container.appendChild(el);
+  renderLoop(el);
+}
+
+function renderLoop(el) {
+  const pct = Math.min(((state.day - 1) / state.target) * 100, 100);
+  const move = state.currentMove;
+
+  el.innerHTML = `
+    <div class="context-line">Learning ${escHtml(state.skill)} · Day ${state.day} of ~${state.target}</div>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="prog-bar" style="width:0%"></div>
+    </div>
+
+    <div class="move-label">Your one move</div>
+    <div class="move-title">${escHtml(move.title)}</div>
+    <div class="move-description">${escHtml(move.description)}</div>
+    <div class="move-eta">${move.etaMinutes} min</div>
+
+    <div class="checkin-row">
+      <button class="btn-checkin" data-outcome="done">Done</button>
+      <button class="btn-checkin" data-outcome="fast">Done easily</button>
+      <button class="btn-checkin" data-outcome="long">Took longer</button>
+      <button class="btn-checkin" data-outcome="stuck">Got stuck</button>
+      <button class="btn-checkin" data-outcome="skip">Skipped today</button>
+    </div>
+
+    <div class="feedback-line" id="feedback"></div>
+    <div class="loading-line" id="loading">Getting your next move…</div>
+
+    ${state.history.length ? renderLedger() : ''}
+  `;
+
+  // Animate progress bar after paint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const bar = el.querySelector('#prog-bar');
+      if (bar) bar.style.width = pct + '%';
+    });
+  });
+
+  el.querySelectorAll('.btn-checkin').forEach(btn => {
+    btn.addEventListener('click', () => handleCheckin(btn.dataset.outcome));
+  });
+}
+
+function renderLedger() {
+  const items = state.history.slice().reverse().map(h =>
+    `<li class="ledger-item" data-outcome="${escHtml(h.outcome)}">Day ${h.day} — ${escHtml(h.moveTitle)} — ${escHtml(h.outcome)}</li>`
+  ).join('');
+  return `
+    <div class="ledger">
+      <div class="ledger-heading">So far</div>
+      <ul class="ledger-list">${items}</ul>
+    </div>
+  `;
+}
+
+async function handleCheckin(outcome) {
+  const el = document.getElementById('loop-screen');
+  if (!el) return;
+
+  // Disable all check-in buttons
+  el.querySelectorAll('.btn-checkin').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.outcome === outcome) b.classList.add('glow-once');
+  });
+
+  // Show feedback
+  const feedback = el.querySelector('#feedback');
+  feedback.textContent = FEEDBACK[outcome];
+  feedback.classList.add('visible');
+
+  // Show loading
+  const loading = el.querySelector('#loading');
+  loading.classList.add('visible');
+
+  // Update state
+  state.history.push({ day: state.day, moveTitle: state.currentMove.title, outcome });
+
+  if (outcome === 'done') {
+    state.day++;
+  } else if (outcome === 'fast') {
+    state.day++;
+    state.target = Math.max(state.day, state.target - 1);
+  } else if (outcome === 'long') {
+    state.day++;
+    state.target++;
+  } else if (outcome === 'stuck') {
+    state.day++;
+  } else if (outcome === 'skip') {
+    state.day++;
+    state.target++;
+  }
+
+  // Check completion
+  if (state.day > state.target) {
+    showCompleteScreen();
+    return;
+  }
+
+  const move = await getNextMove(state, outcome);
+  if (!move) return;
+  state.currentMove = move;
+
+  showLoopScreen();
+}
+
+function showCompleteScreen() {
+  container.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'screen complete-screen animate-in';
+  el.innerHTML = `
+    <h2>Plan complete.</h2>
+    <p>You made it to day ${state.day - 1} of ${state.target} for <strong>${escHtml(state.skill)}</strong>.<br>
+    That's real progress — not a plan, the thing itself.</p>
+    <button class="btn-primary" id="restart-btn">Start a new skill →</button>
+    ${state.history.length ? renderLedger() : ''}
+  `;
+  container.appendChild(el);
+  el.querySelector('#restart-btn').addEventListener('click', () => {
+    Object.assign(state, { skill: '', level: '', hoursPerWeek: '', doneMeans: '', day: 1, target: 14, history: [], currentMove: null });
+    showCalibrateScreen();
+  });
+}
+
+// ── API ───────────────────────────────────────────────────
+
+async function getNextMove(state, outcome) {
+  const key = sessionStorage.getItem('cadence_key');
+  const historyText = state.history
+    .map(h => `Day ${h.day} — ${h.moveTitle} — ${h.outcome}`)
+    .join('\n') || 'None yet';
+
+  const payload = {
+    model: 'claude-haiku-4-5',
+    max_tokens: 256,
+    system: SYSTEM_PROMPT,
+    messages: [{
+      role: 'user',
+      content: `Skill: ${state.skill}
+Level: ${state.level}
+Hours per week: ${state.hoursPerWeek}
+What "done" means: ${state.doneMeans}
+Current day: ${state.day} of ~${state.target}
+Last outcome: ${outcome}
+History:
+${historyText}
+
+Give the single next move.`
+    }]
+  };
+
+  const doFetch = () => fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  let response;
+  try {
+    response = await doFetch();
+  } catch (err) {
+    return fallback(state.skill);
+  }
+
+  if (response.status === 401) {
+    sessionStorage.removeItem('cadence_key');
+    showKeyScreen('Invalid API key — check and re-enter.');
+    return null;
+  }
+
+  const data = await response.json();
+  let text = data.content?.[0]?.text || '';
+  text = text.replace(/```json|```/g, '').trim();
+
+  // Try parse
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Retry once
+    let response2;
+    try {
+      response2 = await doFetch();
+    } catch {
+      return fallback(state.skill);
+    }
+    if (response2.status === 401) {
+      sessionStorage.removeItem('cadence_key');
+      showKeyScreen('Invalid API key — check and re-enter.');
+      return null;
+    }
+    const data2 = await response2.json();
+    let text2 = data2.content?.[0]?.text || '';
+    text2 = text2.replace(/```json|```/g, '').trim();
+    try {
+      return JSON.parse(text2);
+    } catch {
+      return fallback(state.skill);
+    }
+  }
+}
+
+function fallback(skill) {
+  return { title: 'Next small step', description: `Spend 20 minutes on the next small piece of ${skill}.`, etaMinutes: 20 };
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── Boot ─────────────────────────────────────────────────
+
+(function boot() {
+  const key = sessionStorage.getItem('cadence_key');
+  if (key) {
+    showCalibrateScreen();
+  } else {
+    showKeyScreen();
+  }
+})();
+</script>
+</body>
+</html>
