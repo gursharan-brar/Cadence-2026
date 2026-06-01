@@ -196,31 +196,14 @@ html, body {
 .screen-enter { animation: sIn  300ms cubic-bezier(0.2,0.9,0.2,1) both; }
 .screen-exit  { animation: sOut 180ms ease-in forwards; pointer-events:none; }
 
-/* ══════════════════════════════
-   SCREEN 0 — KEY ENTRY
-══════════════════════════════ */
-.screen-key {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 100vh; padding: 24px;
-}
-
-.key-card { width: 100%; max-width: 440px; padding: 40px; }
-
-.key-wordmark {
-  font-family: 'Clash Display', system-ui, sans-serif;
-  font-size: 28px; font-weight: 700; color: var(--ink);
-  display: inline-flex; align-items: flex-start; gap: 3px;
-  margin-bottom: 4px;
-}
-.key-wordmark .dot { color: var(--accent); font-size: 12px; line-height: 2.4; }
-
-.key-tagline { font-size: 14px; color: var(--ink-mid); margin-bottom: 28px; }
-
-.key-rule { border: none; border-top: 1px solid var(--border); margin-bottom: 28px; }
-
 .key-helper { font-size: 13px; color: var(--ink-mid); margin-top: 10px; line-height: 1.6; }
 .key-helper a { color: var(--accent); text-decoration: none; }
 .key-helper a:hover { text-decoration: underline; }
+
+/* Inline key input on home */
+.home-key-section { max-width: 400px; margin: 0 auto 8px; text-align: left; }
+.home-key-row { display: flex; gap: 10px; align-items: stretch; }
+.home-key-row .input-base { flex: 1; }
 
 /* ══════════════════════════════
    SCREEN 1 — HOME
@@ -708,58 +691,23 @@ function wireHeader(el) {
   const chkey = el.querySelector('#h-chkey');
   if (chkey) chkey.addEventListener('click', () => {
     sessionStorage.removeItem('cadence_key');
-    showScreen('key');
+    showScreen('home');
   });
   const hist = el.querySelector('#h-hist');
   if (hist) hist.addEventListener('click', () => showScreen('history'));
 }
 
 /* ══════════════════════════════
-   SCREEN 0 — KEY ENTRY
+   SCREEN 0/1 — HOME (+ key entry)
 ══════════════════════════════ */
 
 const SCREENS = {};
 
-SCREENS.key = function(el, opts={}) {
-  const err = opts.error || '';
-  el.innerHTML = `
-    <div class="screen-key">
-      <div class="card key-card">
-        <div class="key-wordmark">Cadence<span class="dot">●</span></div>
-        <div class="key-tagline">Your key. Your data. Your plan.</div>
-        <hr class="key-rule">
-        <div class="err-box${err?' show':''}" id="ke" style="margin-bottom:16px">${esc(err)}</div>
-        <label class="field-label" for="ki">Anthropic API Key</label>
-        <input class="input-base" type="password" id="ki" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
-        <p class="key-helper">
-          Lives only in this browser tab — never stored, never sent to us.<br>
-          <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a free key at console.anthropic.com</a>
-        </p>
-        <button class="btn-primary" id="kgo" style="width:100%;margin-top:24px">Continue →</button>
-      </div>
-    </div>`;
-
-  const inp = el.querySelector('#ki');
-  const btn = el.querySelector('#kgo');
-  inp.focus();
-
-  function go() {
-    const v = inp.value.trim();
-    if (!v) { inp.focus(); return; }
-    sessionStorage.setItem('cadence_key', v);
-    showScreen('home');
-  }
-  btn.addEventListener('click', go);
-  inp.addEventListener('keydown', e => { if (e.key==='Enter') go(); });
-};
-
-/* ══════════════════════════════
-   SCREEN 1 — HOME
-══════════════════════════════ */
-
-SCREENS.home = function(el) {
+SCREENS.home = function(el, opts={}) {
   skills = SS.load();
+  const hasKey = !!SS.key();
   const has = skills.length > 0;
+  const err = opts.error || '';
 
   const scards = skills.map((s,i) => `
     <div class="card hoverable skill-card" data-i="${i}" role="button" tabindex="0">
@@ -770,6 +718,42 @@ SCREENS.home = function(el) {
       <div class="sc-cta">Continue →</div>
     </div>`).join('');
 
+  const heroCTA = hasKey ? `
+    <button class="btn-primary home-cta" id="ns">Start a new skill →</button>
+    <div class="trust-row">
+      <span>🔒 Key stays in your tab</span><span class="trust-sep">·</span>
+      <span>⚡ First move in 20 seconds</span><span class="trust-sep">·</span>
+      <span>↩ Adapts when you get stuck</span>
+    </div>
+  ` : `
+    <div class="home-key-section">
+      <div class="err-box${err?' show':''}" id="ke" style="margin-bottom:12px">${esc(err)}</div>
+      <label class="field-label" for="ki">Anthropic API Key</label>
+      <div class="home-key-row">
+        <input class="input-base" type="password" id="ki" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <button class="btn-primary" id="kgo">Continue →</button>
+      </div>
+      <p class="key-helper">Lives only in this browser tab — never stored, never sent to us.
+        <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a free key at console.anthropic.com</a>
+      </p>
+    </div>
+  `;
+
+  const below = (hasKey && has) ? `
+    <div class="skills-section">
+      <div class="section-eyebrow">Pick up where you left off</div>
+      <div class="skills-grid">${scards}</div>
+    </div>
+  ` : `
+    <div class="hiw-section">
+      <div class="hiw-grid">
+        <div class="card hiw-card"><div class="hiw-num">01</div><div class="hiw-title">Name it</div><div class="hiw-desc">Tell us the skill and where you're starting from.</div></div>
+        <div class="card hiw-card"><div class="hiw-num">02</div><div class="hiw-title">Get your move</div><div class="hiw-desc">One concrete action, sized to a single session.</div></div>
+        <div class="card hiw-card"><div class="hiw-num">03</div><div class="hiw-title">Check in</div><div class="hiw-desc">Done, stuck, or skipped — the plan bends to reality.</div></div>
+      </div>
+    </div>
+  `;
+
   el.innerHTML = `
     ${mkHeader('home')}
     <div class="home-body">
@@ -777,37 +761,33 @@ SCREENS.home = function(el) {
         <div class="home-overline">Adaptive Skill Learning</div>
         <h1 class="home-headline">One move.<br>Every day.</h1>
         <p class="home-sub">Tell us what you want to learn. We'll give you the next concrete step — and adapt when life happens.</p>
-        <button class="btn-primary home-cta" id="ns">Start a new skill →</button>
-        <div class="trust-row">
-          <span>🔒 Key stays in your tab</span><span class="trust-sep">·</span>
-          <span>⚡ First move in 20 seconds</span><span class="trust-sep">·</span>
-          <span>↩ Adapts when you get stuck</span>
-        </div>
+        ${heroCTA}
       </div>
-      ${has ? `
-        <div class="skills-section">
-          <div class="section-eyebrow">Pick up where you left off</div>
-          <div class="skills-grid">${scards}</div>
-        </div>
-      ` : `
-        <div class="hiw-section">
-          <div class="hiw-grid">
-            <div class="card hiw-card"><div class="hiw-num">01</div><div class="hiw-title">Name it</div><div class="hiw-desc">Tell us the skill and where you're starting from.</div></div>
-            <div class="card hiw-card"><div class="hiw-num">02</div><div class="hiw-title">Get your move</div><div class="hiw-desc">One concrete action, sized to a single session.</div></div>
-            <div class="card hiw-card"><div class="hiw-num">03</div><div class="hiw-title">Check in</div><div class="hiw-desc">Done, stuck, or skipped — the plan bends to reality.</div></div>
-          </div>
-        </div>
-      `}
+      ${below}
     </div>`;
 
   wireHeader(el);
-  el.querySelector('#ns').addEventListener('click', () => showScreen('calibrate'));
 
-  el.querySelectorAll('.skill-card').forEach(card => {
-    const open = () => { currentIdx = +card.dataset.i; showScreen('loop'); };
-    card.addEventListener('click', open);
-    card.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); open(); }});
-  });
+  if (hasKey) {
+    el.querySelector('#ns').addEventListener('click', () => showScreen('calibrate'));
+    el.querySelectorAll('.skill-card').forEach(card => {
+      const open = () => { currentIdx = +card.dataset.i; showScreen('loop'); };
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); open(); }});
+    });
+  } else {
+    const inp = el.querySelector('#ki');
+    const btn = el.querySelector('#kgo');
+    inp.focus();
+    function go() {
+      const v = inp.value.trim();
+      if (!v) { inp.focus(); return; }
+      sessionStorage.setItem('cadence_key', v);
+      showScreen('home');
+    }
+    btn.addEventListener('click', go);
+    inp.addEventListener('keydown', e => { if (e.key==='Enter') go(); });
+  }
 };
 
 /* ══════════════════════════════
@@ -1219,7 +1199,7 @@ Give the single next move.`
 
   if (res.status===401) {
     sessionStorage.removeItem('cadence_key');
-    showScreen('key', {error:'Invalid key — double-check and try again.'});
+    showScreen('home', {error:'Invalid key — double-check and try again.'});
     return null;
   }
   if (!res.ok) throw new Error(`API error ${res.status} — please try again.`);
@@ -1247,7 +1227,7 @@ Give the single next move.`
 
 (function boot() {
   skills = SS.load();
-  showScreen(SS.key() ? 'home' : 'key');
+  showScreen('home');
 })();
 </script>
 </body>
