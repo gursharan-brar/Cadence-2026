@@ -682,7 +682,7 @@ function mkHeader(mode, skill) {
     ? `<span class="header-day" id="h-day">Day ${skill.day} of ~${skill.target}</span>
        <button class="btn-link" id="h-hist" title="History">${IC.hist} History</button>
        <button class="btn-link" id="h-chkey">Change key</button>`
-    : `<button class="btn-link" id="h-chkey">Change key</button>`;
+    : (SS.key() ? `<button class="btn-link" id="h-chkey">Change key</button>` : '');
 
   return `<header class="app-header"><div>${left}</div><div class="header-right">${right}</div></header>`;
 }
