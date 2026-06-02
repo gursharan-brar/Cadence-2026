@@ -196,14 +196,9 @@ html, body {
 .screen-enter { animation: sIn  300ms cubic-bezier(0.2,0.9,0.2,1) both; }
 .screen-exit  { animation: sOut 180ms ease-in forwards; pointer-events:none; }
 
-.key-helper { font-size: 13px; color: var(--ink-mid); margin-top: 10px; line-height: 1.6; }
+.key-helper { font-size: 13px; color: var(--ink-mid); line-height: 1.6; }
 .key-helper a { color: var(--accent); text-decoration: none; }
 .key-helper a:hover { text-decoration: underline; }
-
-/* Inline key input on home */
-.home-key-section { max-width: 400px; margin: 0 auto 8px; text-align: left; }
-.home-key-row { display: flex; gap: 10px; align-items: stretch; }
-.home-key-row .input-base { flex: 1; }
 
 /* ══════════════════════════════
    SCREEN 1 — HOME
@@ -212,7 +207,7 @@ html, body {
 
 .home-hero {
   max-width: 680px; margin: 0 auto;
-  padding: 72px 28px 56px; text-align: center;
+  padding: 72px 28px 40px; text-align: center;
 }
 
 .home-overline {
@@ -272,11 +267,20 @@ html, body {
 /* How it works */
 .hiw-section { max-width: 680px; margin: 0 auto; padding: 0 28px; }
 .hiw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.hiw-grid-4 { grid-template-columns: repeat(2, 1fr); }
 
 .hiw-card {
   padding: 28px 22px; overflow: hidden; position: relative; cursor: default;
 }
 .hiw-card:hover { transform: none !important; box-shadow: var(--shadow-md) !important; }
+
+.hiw-key-card {
+  background: var(--accent-light) !important;
+  border-color: rgba(92,79,255,0.18) !important;
+  cursor: default;
+}
+.hiw-key-card .hiw-num { color: rgba(92,79,255,0.15); }
+.hiw-key-card .input-base { background: rgba(255,255,255,0.75); margin: 10px 0 6px; }
 
 .hiw-num {
   font-family: 'Clash Display', system-ui, sans-serif;
@@ -284,7 +288,7 @@ html, body {
   line-height: 1; margin-bottom: 8px; user-select: none;
 }
 .hiw-title { font-family: 'Satoshi', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
-.hiw-desc { font-size: 14px; color: var(--ink-mid); line-height: 1.55; }
+.hiw-desc { font-size: 14px; color: var(--ink-mid); line-height: 1.55; margin-bottom: 2px; }
 
 /* ══════════════════════════════
    SCREEN 2 — CALIBRATE
@@ -547,24 +551,43 @@ html, body {
    CONSTANTS
 ══════════════════════════════ */
 
-const SYSTEM_PROMPT = `You are the planning engine inside Cadence, an adaptive skill-learning tool.
-Output the SINGLE next move for this learner, sized to one focused session (15–50 min).
+const SYSTEM_PROMPT = `You are the move engine inside Cadence, an adaptive skill-learning tool.
 
-Rules:
-- Exactly ONE move. Never a list or multi-day plan.
-- Concrete and doable today. "Build an endpoint that returns JSON" not "learn about APIs".
-- Personal to THIS person: use their level, goal, and especially their last outcome.
-- Adapt to last outcome:
-  - done: advance to the next logical step at the same difficulty.
-  - fast: advance AND step up difficulty. They are ahead.
-  - long: advance but keep next step modest. Do not pile on.
-  - stuck: DO NOT advance. Generate a SMALLER, more concrete bridging step past the specific wall. This is the most important case — make it genuinely smaller and more specific.
-  - skip: re-offer or lightly reframe the skipped move. No guilt, no penalty.
-- Match their goal: Use it for real → bias toward visible output. Understand it → bias toward small experiments. Build a thing → bias toward making something tangible.
-- Tone: warm, plain, direct. Two sentences max. No emoji. No hype. No filler.
+Your job: generate the SINGLE next learning move for this person. Not a vague direction. Not a concept to think about. A real, concrete, guided instruction they can act on RIGHT NOW without googling anything extra.
 
-Output ONLY valid JSON, no markdown, no preamble:
-{"title": string (max 5 words), "description": string (max 2 sentences), "etaMinutes": integer}`;
+WHAT A GOOD MOVE LOOKS LIKE:
+- Bad: "Learn about React hooks" — too vague, no action
+- Bad: "Explore the concept of promises in JavaScript" — sounds like a textbook
+- Good: "Open a new file, write a useEffect hook that console.logs 'mounted' when your component loads, and check that it fires once on mount. Then add a dependency array with an empty [] and confirm it only fires once."
+- Good: "Go to your terminal and run: npx create-react-app my-app --template typescript. Wait for it to finish, open the src/App.tsx file, and change the return statement to render your own name in an h1 tag. Save and check localhost:3000."
+
+The move MUST:
+1. Start with a verb (Open, Run, Write, Create, Go to, Add, Change, Build, Connect)
+2. Name the specific file, tool, command, or URL they need
+3. Describe the exact action in enough detail that they do not need to search for anything
+4. End with a concrete checkable outcome ("you should see X", "the output will be Y", "you'll know it works when Z")
+
+Adapt to last outcome:
+- done: advance to the next logical step, maintain difficulty
+- fast: advance AND increase scope/complexity — they are ahead of plan
+- long: advance but reduce the scope of the next move — keep it achievable
+- stuck: DO NOT advance. Break the stuck move into a smaller sub-step that removes the specific blocker. If they were stuck on "write a function", the next move is "just write the function signature with empty body and make sure it compiles/runs without error." Go one level more granular.
+- skip: re-offer the same move with a slightly different framing or entry point. No guilt.
+
+Match their goal:
+- "Use it for real" → moves that produce something they could show someone
+- "Build a thing" → moves that add a visible feature or output
+- "Understand it" → moves that involve a tiny experiment with a clear observable result
+
+Level adjustments:
+- Beginner: assume zero context, spell out every step, name every command
+- Rusty basics: assume they know the concepts but forgot syntax — give the command/code, brief reminder why
+- Want depth: skip the basics, push toward edge cases, performance, patterns, best practices
+
+Tone: direct, warm, like a senior dev pair-programming with you. No preamble, no filler. Just the move.
+
+Output ONLY valid JSON. No markdown. No explanation outside the JSON:
+{"title": string (max 5 words, starts with a verb, specific), "description": string (2–4 sentences, concrete enough to act on immediately), "etaMinutes": integer}`;
 
 const FEEDBACK = {
   done:  'Good. The plan holds.',
@@ -718,6 +741,8 @@ SCREENS.home = function(el, opts={}) {
       <div class="sc-cta">Continue →</div>
     </div>`).join('');
 
+  // State A: no key — hero + 4-card grid (steps 01–03 + key-entry card)
+  // State B: has key — hero + CTA + skills or 3-card how-it-works
   const heroCTA = hasKey ? `
     <button class="btn-primary home-cta" id="ns">Start a new skill →</button>
     <div class="trust-row">
@@ -725,34 +750,41 @@ SCREENS.home = function(el, opts={}) {
       <span>⚡ First move in 20 seconds</span><span class="trust-sep">·</span>
       <span>↩ Adapts when you get stuck</span>
     </div>
-  ` : `
-    <div class="home-key-section">
-      <div class="err-box${err?' show':''}" id="ke" style="margin-bottom:12px">${esc(err)}</div>
-      <label class="field-label" for="ki">Anthropic API Key</label>
-      <div class="home-key-row">
-        <input class="input-base" type="password" id="ki" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
-        <button class="btn-primary" id="kgo">Continue →</button>
-      </div>
-      <p class="key-helper">Lives only in this browser tab — never stored, never sent to us.
-        <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get a free key at console.anthropic.com</a>
-      </p>
-    </div>
-  `;
+  ` : '';
 
-  const below = (hasKey && has) ? `
-    <div class="skills-section">
-      <div class="section-eyebrow">Pick up where you left off</div>
-      <div class="skills-grid">${scards}</div>
-    </div>
-  ` : `
-    <div class="hiw-section">
-      <div class="hiw-grid">
-        <div class="card hiw-card"><div class="hiw-num">01</div><div class="hiw-title">Name it</div><div class="hiw-desc">Tell us the skill and where you're starting from.</div></div>
-        <div class="card hiw-card"><div class="hiw-num">02</div><div class="hiw-title">Get your move</div><div class="hiw-desc">One concrete action, sized to a single session.</div></div>
-        <div class="card hiw-card"><div class="hiw-num">03</div><div class="hiw-title">Check in</div><div class="hiw-desc">Done, stuck, or skipped — the plan bends to reality.</div></div>
+  const below = hasKey
+    ? (has ? `
+      <div class="skills-section">
+        <div class="section-eyebrow">Pick up where you left off</div>
+        <div class="skills-grid">${scards}</div>
       </div>
-    </div>
-  `;
+    ` : `
+      <div class="hiw-section">
+        <div class="hiw-grid">
+          <div class="card hiw-card"><div class="hiw-num">01</div><div class="hiw-title">Name it</div><div class="hiw-desc">Tell us the skill and where you're starting from.</div></div>
+          <div class="card hiw-card"><div class="hiw-num">02</div><div class="hiw-title">Get your move</div><div class="hiw-desc">One concrete action, sized to a single session.</div></div>
+          <div class="card hiw-card"><div class="hiw-num">03</div><div class="hiw-title">Check in</div><div class="hiw-desc">Done, stuck, or skipped — the plan bends to reality.</div></div>
+        </div>
+      </div>
+    `)
+    : `
+      <div class="hiw-section">
+        <div class="hiw-grid hiw-grid-4">
+          <div class="card hiw-card"><div class="hiw-num">01</div><div class="hiw-title">Name it</div><div class="hiw-desc">Tell us the skill and where you're starting from.</div></div>
+          <div class="card hiw-card"><div class="hiw-num">02</div><div class="hiw-title">Get your move</div><div class="hiw-desc">One concrete action, sized to a single session.</div></div>
+          <div class="card hiw-card"><div class="hiw-num">03</div><div class="hiw-title">Check in</div><div class="hiw-desc">Done, stuck, or skipped — the plan bends to reality.</div></div>
+          <div class="card hiw-card hiw-key-card">
+            <div class="hiw-num">04</div>
+            <div class="hiw-title">Enter your key and go</div>
+            <div class="hiw-desc">Cadence uses your Anthropic key directly. Your key never leaves this browser tab.</div>
+            <div class="err-box${err?' show':''}" id="ke" style="margin:10px 0 6px">${esc(err)}</div>
+            <input class="input-base" type="password" id="ki" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+            <p class="key-helper" style="margin:6px 0 14px">Get a free key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a></p>
+            <button class="btn-primary" id="kgo" style="width:100%">Start learning →</button>
+          </div>
+        </div>
+      </div>
+    `;
 
   el.innerHTML = `
     ${mkHeader('home')}
@@ -760,7 +792,7 @@ SCREENS.home = function(el, opts={}) {
       <div class="home-hero">
         <div class="home-overline">Adaptive Skill Learning</div>
         <h1 class="home-headline">One move.<br>Every day.</h1>
-        <p class="home-sub">Tell us what you want to learn. We'll give you the next concrete step — and adapt when life happens.</p>
+        <p class="home-sub" style="margin-bottom:${hasKey?'36px':'0'}">Tell us what you want to learn. We'll give you the next concrete step — and adapt when life happens.</p>
         ${heroCTA}
       </div>
       ${below}
@@ -769,7 +801,8 @@ SCREENS.home = function(el, opts={}) {
   wireHeader(el);
 
   if (hasKey) {
-    el.querySelector('#ns').addEventListener('click', () => showScreen('calibrate'));
+    const ns = el.querySelector('#ns');
+    if (ns) ns.addEventListener('click', () => showScreen('calibrate'));
     el.querySelectorAll('.skill-card').forEach(card => {
       const open = () => { currentIdx = +card.dataset.i; showScreen('loop'); };
       card.addEventListener('click', open);
@@ -783,7 +816,7 @@ SCREENS.home = function(el, opts={}) {
       const v = inp.value.trim();
       if (!v) { inp.focus(); return; }
       sessionStorage.setItem('cadence_key', v);
-      showScreen('home');
+      showScreen('calibrate');
     }
     btn.addEventListener('click', go);
     inp.addEventListener('keydown', e => { if (e.key==='Enter') go(); });
@@ -1199,7 +1232,7 @@ Give the single next move.`
 
   if (res.status===401) {
     sessionStorage.removeItem('cadence_key');
-    showScreen('home', {error:'Invalid key — double-check and try again.'});
+    showScreen('home', {error:'That key didn\'t work — try again.'});
     return null;
   }
   if (!res.ok) throw new Error(`API error ${res.status} — please try again.`);
